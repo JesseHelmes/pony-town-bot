@@ -16,23 +16,23 @@ const isTest = false;// this makes sure that we can do commands when we are test
 let botName = 'PonyTownBot'; // the name we should ignore
 
 const observer = new MutationObserver(()=> {
-	if((isTest && 
-	document.querySelector('.chat-log-scroll-inner .chat-line:last-child').querySelector('.chat-line-name-content').textContent
-	=== botName
-	) || document.querySelector('.chat-box').hasAttribute('hidden')){
+	if((isTest && isBot()
+	) || document.querySelector('.chat-box').hasAttribute('hidden') && !isBot()){
 		doCommand();
 	}
 });
 
 observer.observe(document.querySelector('.chat-log-scroll-inner'), {childList: true});
 
+/*
 const speak = setInterval(() => {
 	if(!allowedToSpeak){ return; }
 	for (var i = 0; i < sentencesToRepeat.length; i++) {
 		useChat(sentencesToRepeat[i]);
-		setTimeout(null, 1000);//waits before sending another chat sentence.
+		setTimeout(()=>{}, 1000);//waits before sending another chat sentence.
 	}
 }, 5000);
+*/
 
 /*
 Let isTalking = false;
@@ -58,9 +58,12 @@ function doCommand(){
 	const commandOwner = document.querySelector('.chat-log-scroll-inner .chat-line:last-child').querySelector('.chat-line-name-content').textContent;
 	const givenCommand = document.querySelector('.chat-log-scroll-inner .chat-line:last-child').querySelector('.chat-line-message').textContent;
 	const command = givenCommand.split(' ');
+	
+	//TODO face angry: convert faces like this to their ./angry command face look like.. angry = >:/
+	//convertFaceToCommand()
 
 	//TODO order and group commands
-	switch(command[0]){//.toLowerCase()
+	switch(command[0].charAt(0).toLowerCase() + command[0].slice(1)){//.charAt(0).toLowerCase() + command[0].slice(1)
 		//pt commands
 		case 'eat':
 		case 'nom':
@@ -115,6 +118,7 @@ function doCommand(){
 			}
 			break;
 		case 'reset':
+		case 'resetFace':
 			useChatCommand('e');
 			break;
 		case 'light':
@@ -239,16 +243,19 @@ function doCommand(){
 
 
 		//funny commands
+		/*
 		case 'yay':
 		case 'yay!':
 			useChat('yay! ^^');
 			break;
-			
+		*/
+
 		case 'echo':
 			allowedToSpeak = true;
 			addListenToPlayer(commandOwner);
 			break;
 		case 'stopEcho':
+		case 'cancelEcho':
 			allowedToSpeak = false;
 			break;
 		case 'clearEcho':
@@ -310,6 +317,7 @@ function doCommand(){
 			useChatCommand('sit');
 			break;
 		case 'lie':
+		case 'lay':
 			useChatCommand('lie');
 			break;
 
@@ -341,7 +349,8 @@ function useChat(say = '/nom'){
 	document.dispatchEvent(enter);
 	document.querySelector('#chat-input').value = say;
 	document.querySelector('#chat-input').dispatchEvent(event);
-	document.querySelector('#chat-input').value = '';// clears chat so that i can type with a empty chat
+	// clears chat so that i can type with a empty chat again, but if you hit enter without typing then it will say or do it's previous value.
+	document.querySelector('#chat-input').value = '';
 	document.querySelector("ui-button[title='Send message']").click();
 }
 
@@ -467,11 +476,21 @@ function setBotName(newBotName){
 	botName = newBotName;
 }
 
+function isBot(){
+	return document.querySelector('.chat-log-scroll-inner .chat-line:last-child').querySelector('.chat-line-name-content').textContent
+	=== botName;
+}
+
+//put here observer and useChat('turning on..');
+function start(){
+	
+}
+
 function stop(){
 	useChat('shutting down..');
 	useChatCommand('e u-u');
 	//useChat('');//clears chat.
 	console.log('stopping..');
-	clearInterval(speak);	
+	//clearInterval(speak);	
 	observer.disconnect();
 }
